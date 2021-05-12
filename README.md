@@ -1,5 +1,7 @@
 # Podcast API Scala Library
 
+[![Scala Run Sample App](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml/badge.svg)](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml)
+
 The Podcast API Scala library provides convenient access to the [Listen Notes Podcast API](https://www.listennotes.com/api/) from
 applications written in the Scala language.
 
