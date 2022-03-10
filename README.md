@@ -55,7 +55,7 @@ You can install this library for JVM-based languages, including Java, Kotlin, Cl
 Add this dependency to your project's build file:
 
 ```groovy
-implementation "com.listennotes:podcast-api:1.1.0"
+implementation "com.listennotes:podcast-api:1.1.1"
 ```
 
 ### Maven users
@@ -66,7 +66,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>com.listennotes</groupId>
   <artifactId>podcast-api</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
 </dependency>
 ```
 
@@ -106,7 +106,7 @@ object App {
       println("Usage this month: " + response.getUsage() + " requests")    
     } catch {
       case e: AuthenticationException => println("Wrong API key")
-      case e: RateLimitException => println("you are using FREE plan and you exceed the quota limit")
+      case e: RateLimitException => println("For FREE plan, exceeding the quota limit; or for all plans, sending too many requests too fast and exceeding the rate limit.")
     }
   }
 }
@@ -134,7 +134,7 @@ the sort of error that occurred.
 |  AuthenticationException | wrong api key or your account is suspended  |
 | ApiConnectionException  | fail to connect to API servers  |
 | InvalidRequestException  | something wrong on your end (client side errors), e.g., missing required parameters  |
-| RateLimitException  | you are using FREE plan and you exceed the quota limit  |
+| RateLimitException  |  for FREE plan, exceeding the quota limit; or for all plans, sending too many requests too fast and exceeding the rate limit  |
 | NotFoundException  | endpoint not exist, or podcast / episode not exist  |
 | ListenApiException  | something wrong on our end (unexpected server errors)  |
 

@@ -32,7 +32,7 @@ object App {
       println("Usage this month: " + response.getUsage() + " requests")    
     } catch {
       case e: AuthenticationException => println("Wrong API key")
-      case e: RateLimitException => println("you are using FREE plan and you exceed the quota limit")
+      case e: RateLimitException => println(" For FREE plan, exceeding the quota limit; or for all plans, sending too many requests too fast and exceeding the rate limit.")
     }
   }
 }

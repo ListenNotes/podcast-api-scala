@@ -13,3 +13,4 @@ app/.classpath
 app/.project
 app/.settings/
 app/bin/
+.vscode/
