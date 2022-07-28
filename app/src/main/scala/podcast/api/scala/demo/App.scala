@@ -15,7 +15,7 @@ object App {
 
     // Parameters are passed via this HashMap
     // All parameters can be found at:
-    //     https://www.listennotes.com/api/docs/
+    //     https://www.listennotes.com/podcast-api/docs/
     val parameters = new java.util.HashMap[String, String]
     parameters.put("q", "startup")
     parameters.put("type", "episode")    
