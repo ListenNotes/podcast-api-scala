@@ -1,6 +1,6 @@
 # Podcast API Scala Library
 
-[![Scala Run Sample App](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml/badge.svg)](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml)
+[![Scala Run Sample App](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml/badge.svg)](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml) [![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Flistennotes%2Fpodcast-api%2Fmaven-metadata.xml)](https://search.maven.org/artifact/com.listennotes/podcast-api)
 
 The Podcast API Scala library provides convenient access to the [Listen Notes Podcast API](https://www.listennotes.com/podcast-api/) from
 applications written in the Scala language.
