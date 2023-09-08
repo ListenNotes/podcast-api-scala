@@ -27,7 +27,7 @@ dependencies {
     implementation 'com.google.guava:guava:30.0-jre'
 
     // Podcast API
-    implementation "com.listennotes:podcast-api:1.1.5"
+    implementation "com.listennotes:podcast-api:1.1.6"
 
     // Use Scalatest for testing our library
     testImplementation 'junit:junit:4.13.1'
