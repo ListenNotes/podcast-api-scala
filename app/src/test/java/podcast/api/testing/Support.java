@@ -15,7 +15,8 @@ public final class Support implements AutoCloseable {
     public record Request(String method, URI uri, String key, String body) { }
     private final HttpServer server;
     private final BlockingQueue<Request> requests = new LinkedBlockingQueue<>();
-    public int status = 200;
+    public volatile int status = 200;
+    public volatile String responseBody = "{\"ok\":true}";
     public Support() throws Exception {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
@@ -25,7 +26,7 @@ public final class Support implements AutoCloseable {
                     new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)));
                 exchange.getResponseHeaders().set("X-ListenAPI-Usage", "12");
                 exchange.getResponseHeaders().set("X-ListenAPI-FreeQuota", "300");
-                byte[] body = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
+                byte[] body = responseBody.getBytes(StandardCharsets.UTF_8);
                 exchange.sendResponseHeaders(status, body.length);
                 exchange.getResponseBody().write(body);
             }

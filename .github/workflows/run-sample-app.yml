@@ -5,11 +5,6 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      maven:
-        description: Also verify the published 3.0.0 artifact from Maven Central
-        type: boolean
-        default: false
 permissions:
   contents: read
 jobs:
@@ -21,43 +16,20 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6.1.0
-      - uses: actions/checkout@v6.1.0
-        with:
-          repository: ListenNotes/podcast-api-java
-          ref: b697b4026f0123820459427b3579b737b592d303
-          path: .ci-java-sdk
       - uses: actions/setup-java@v6.0.0
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
       - uses: gradle/actions/setup-gradle@v6.2.0
-      - run: ./gradlew --no-daemon --include-build .ci-java-sdk check
-      - run: PODCAST_API_JAVA_SOURCE=.ci-java-sdk bash scripts/verify-package.sh
+      - run: ./gradlew --no-daemon check installDist
+      - run: bash scripts/verify-package.sh
   public-mock:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6.1.0
-      - uses: actions/checkout@v6.1.0
-        with:
-          repository: ListenNotes/podcast-api-java
-          ref: b697b4026f0123820459427b3579b737b592d303
-          path: .ci-java-sdk
       - uses: actions/setup-java@v6.0.0
         with:
           distribution: temurin
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v6.2.0
-      - run: ./gradlew --no-daemon --include-build .ci-java-sdk integrationTest
-  maven:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.maven }}
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v6.1.0
-      - uses: actions/setup-java@v6.0.0
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v6.2.0
-        with:
-          cache-disabled: true
-      - run: ./gradlew --no-daemon check
+      - run: ./gradlew --no-daemon integrationTest
