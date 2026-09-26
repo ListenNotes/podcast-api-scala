@@ -1,7 +1,7 @@
 package podcast.api.scala.demo
 
 import com.listennotes.podcast_api.Client
-import com.listennotes.podcast_api.exception.PermissionDeniedException
+import com.listennotes.podcast_api.exception.{InvalidRequestException, NotFoundException, PermissionDeniedException}
 import org.junit.jupiter.api._
 import org.junit.jupiter.api.Assertions._
 import podcast.api.testing.Support
@@ -9,25 +9,63 @@ import scala.jdk.CollectionConverters._
 
 class ExamplesTest {
   @TestFactory
-  def allMethods(): java.util.List[DynamicTest] = Support.operations().asScala.map { op =>
-    DynamicTest.dynamicTest(op.getString("func"), () => {
-      val server = new Support()
-      try {
-        val client = new Client("scala-test", server.baseUrl())
-        val parameters = Support.parameters(op)
-        val before = new java.util.HashMap[String, String](parameters)
-        val response = GeneratedExamples.call(client, op.getString("operationId"), parameters)
-        assertTrue(response.toJSON().getBoolean("ok"))
-        assertEquals(200, response.getStatusCode())
-        assertEquals(12, response.getUsage().intValue())
-        assertEquals(300, response.getFreeQuota().intValue())
-        val request = server.take()
-        assertEquals("scala-test", request.key())
-        Support.verify(op, parameters, request)
-        assertEquals(before, parameters)
-      } finally server.close()
-    })
-  }.asJava
+  def allMethods(): java.util.List[DynamicTest] = {
+    val operations = Support.operations().asScala
+    assertEquals(31, operations.size)
+    operations.map { op =>
+      DynamicTest.dynamicTest(op.getString("func"), () => {
+        val server = new Support()
+        try {
+          val client = new Client("scala-test", server.baseUrl())
+          val parameters = Support.parameters(op)
+          val before = new java.util.HashMap[String, String](parameters)
+          val response = GeneratedExamples.call(client, op.getString("operationId"), parameters)
+          assertTrue(response.toJSON().getBoolean("ok"))
+          assertEquals(200, response.getStatusCode())
+          assertEquals(12, response.getUsage().intValue())
+          assertEquals(300, response.getFreeQuota().intValue())
+          val request = server.take()
+          assertEquals("scala-test", request.key())
+          Support.verify(op, parameters, request)
+          assertEquals(before, parameters)
+        } finally server.close()
+      })
+    }.asJava
+  }
+
+  @Test
+  def deletePlaylistResponseEncodingAndErrors(): Unit = {
+    val server = new Support()
+    try {
+      val client = new Client("scala-test", server.baseUrl())
+      val parameters = Map("id" -> "list/+ ?#é").asJava
+      server.responseBody = """{"id":"list/+ ?#é","deleted":true}"""
+      val response = GeneratedExamples.call(client, "deletePlaylist", parameters)
+      assertEquals(200, response.getStatusCode())
+      assertTrue(response.toJSON().getBoolean("deleted"))
+      assertEquals(parameters.get("id"), response.toJSON().getString("id"))
+      assertEquals(12, response.getUsage().intValue())
+      val request = server.take()
+      assertEquals("DELETE", request.method())
+      assertEquals("/api/v2/playlists/list%2F%2B%20%3F%23%C3%A9", request.uri().getRawPath())
+      assertNull(request.uri().getRawQuery())
+      assertEquals("", request.body())
+      assertEquals("scala-test", request.key())
+      assertEquals(Map("id" -> "list/+ ?#é").asJava, parameters)
+      for (invalid <- Seq(Map.empty[String, String], Map("id" -> ""), Map("id" -> " "))) {
+        assertThrows(classOf[InvalidRequestException], () => GeneratedExamples.call(client, "deletePlaylist", invalid.asJava))
+      }
+      server.status = 404
+      server.responseBody = """{"error":"Playlist not found"}"""
+      val error = assertThrows(classOf[NotFoundException], () => GeneratedExamples.deletePlaylist(client))
+      assertEquals(404, error.getStatusCode())
+      assertEquals("Playlist not found", error.getResponse().toJSON().getString("error"))
+      assertEquals(12, error.getResponse().getUsage().intValue())
+      val exampleRequest = server.take()
+      assertEquals("DELETE", exampleRequest.method())
+      assertEquals("/api/v2/playlists/m1pe7z60bsw", exampleRequest.uri().getRawPath())
+    } finally server.close()
+  }
 
   @Test
   def nestedPathsEmptyFieldsAndClientIsolation(): Unit = {
@@ -64,6 +102,11 @@ class MockIntegrationTest {
       val response = GeneratedExamples.call(new Client(), op.getString("operationId"), Support.parameters(op))
       assertTrue(Set(200, 201).contains(response.getStatusCode()))
       assertFalse(response.toJSON().isEmpty())
+      if (op.getString("operationId") == "deletePlaylist") {
+        assertEquals(200, response.getStatusCode())
+        assertTrue(response.toJSON().getBoolean("deleted"))
+        assertEquals(Support.parameters(op).get("id"), response.toJSON().getString("id"))
+      }
     })
   }.asJava
 

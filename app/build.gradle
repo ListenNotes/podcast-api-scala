@@ -35,7 +35,7 @@ tasks.register('compileReadmeSources') {
         delete(output)
         output.mkdirs()
         def snippets = (rootProject.file('README.md').text =~ /(?ms)^```scala\n(.*?)^```/)
-        if (snippets.size() != 31) throw new GradleException('Expected usage plus 30 generated README examples')
+        if (snippets.size() != 32) throw new GradleException('Expected usage plus 31 generated README examples')
         snippets.eachWithIndex { match, index ->
             new File(output, "Example${index}.scala").text = "package readme.example${index}\n\n" + match[1]
         }

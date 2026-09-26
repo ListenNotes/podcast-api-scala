@@ -1,6 +1,6 @@
 # Podcast API Scala Library
 
-[![Scala Run Sample App](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml/badge.svg)](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml) [![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Flistennotes%2Fpodcast-api%2Fmaven-metadata.xml)](https://search.maven.org/artifact/com.listennotes/podcast-api)
+[![Scala CI](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml/badge.svg)](https://github.com/ListenNotes/podcast-api-scala/actions/workflows/run-sample-app.yml) [![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fcom%2Flistennotes%2Fpodcast-api%2Fmaven-metadata.xml)](https://central.sonatype.com/artifact/com.listennotes/podcast-api)
 
 The Podcast API Scala library provides convenient access to the [Listen Notes Podcast API](https://www.listennotes.com/api/) from
 applications written in the Scala language.
@@ -10,9 +10,9 @@ Simple and no-nonsense podcast search, directory, and insights API. Search the m
 This repo is actually a demo app using [the podcast-api Java library](https://github.com/ListenNotes/podcast-api-java).
 You can find example Scala code in the README.md of this repo.
 
-If you have any questions, please contact [hello@listennotes.com](hello@listennotes.com?subject=Questions+about+the+Scala+SDK+of+Listen+API)
+If you have any questions, please contact [hello@listennotes.com](mailto:hello@listennotes.com?subject=Questions+about+the+Scala+SDK+of+Listen+API)
 
-<a href="https://www.listennotes.com/api/"><img src="https://raw.githubusercontent.com/ListenNotes/ListenApiDemo/master/web/src/powered_by_listennotes.png" width="300" />
+<a href="https://www.listennotes.com/api/"><img src="https://raw.githubusercontent.com/ListenNotes/ListenApiDemo/master/web/src/powered_by_listennotes.png" width="300" alt="Powered by Listen Notes" /></a>
 
 
 ## Method index
@@ -46,6 +46,7 @@ If you have any questions, please contact [hello@listennotes.com](hello@listenno
 - [`fetchPodcastsByDomain`](#fetchpodcastsbydomain) — `GET /podcasts/domains/{domain_name}`
 - [`createPlaylist`](#createplaylist) — `POST /playlists`
 - [`updatePlaylist`](#updateplaylist) — `PUT /playlists/{id}`
+- [`deletePlaylist`](#deleteplaylist) — `DELETE /playlists/{id}`
 - [`addPlaylistItem`](#addplaylistitem) — `POST /playlists/{id}/items`
 - [`deletePlaylistItem`](#deleteplaylistitem) — `DELETE /playlists/{id}/items/{item_id}`
 - [`updatePlaylistItemNotes`](#updateplaylistitemnotes) — `PUT /playlists/{id}/items/{item_id}`
@@ -54,9 +55,8 @@ If you have any questions, please contact [hello@listennotes.com](hello@listenno
 
 ## Installation
 
-Requires Java 17+. The prepared examples target Java SDK 3.0.0. While that version
-is propagating on Maven Central, use the explicit source-build workflow below.
-These repositories do not publish separate Kotlin or Scala Maven packages.
+Requires Java 17+. These Scala examples use Java SDK 3.1.0, available from
+Maven Central. This repository does not publish a separate Scala Maven package.
 
 
 You can install this library for JVM-based languages, including Java, Kotlin, Clojure, Scala, Groovy...
@@ -66,7 +66,7 @@ You can install this library for JVM-based languages, including Java, Kotlin, Cl
 Add this dependency to your project's build file:
 
 ```groovy
-implementation "com.listennotes:podcast-api:3.0.0"
+implementation "com.listennotes:podcast-api:3.1.0"
 ```
 
 ### Maven users
@@ -77,7 +77,7 @@ Add this dependency to your project's POM:
 <dependency>
   <groupId>com.listennotes</groupId>
   <artifactId>podcast-api</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
 </dependency>
 ```
 
@@ -125,6 +125,13 @@ object App {
 
 If `apiKey` is null or "", then we'll connect to a [mock server](https://help.listennotes.com/en/articles/5224500-how-to-test-the-podcast-api-without-an-api-key) that returns fake data for testing purposes.
 
+Since 3.1.0, `client.deletePlaylist(java.util.Map.of("id", playlistId))` permanently
+deletes a playlist and all references and notes saved in it. This cannot be undone;
+add a confirmation step in your application's UI before calling it. The actual
+episodes and podcasts remain in the Listen Notes podcast database. Only playlists
+owned by your admin API account can be modified. A missing or already-deleted
+playlist returns 404 (`NotFoundException`).
+
 You can quickly run sample code using gradle:
 ```shell
 # Use api mock server for test data
@@ -161,29 +168,31 @@ And you can see some sample code [here](https://github.com/ListenNotes/podcast-a
 
 Use the checked-in Gradle wrapper. Default tests run on a loopback HTTP server;
 README examples compile without running requests. Integration tests separately
-call all 30 methods on the stateless public mock and never load an API key.
+call all 31 methods on the stateless public mock and never load an API key.
 
 ```sh
-./gradlew check
+./gradlew check installDist
 ./gradlew integrationTest
 bash scripts/verify-package.sh
 ```
 
-Until Maven Central serves 3.0.0, check out the reviewed Java SDK release source
-and use Gradle's explicit composite build (no Maven-local installation needed):
+CI tests Java 17 and 25 against the published Maven Central package. The standalone
+check copies this repository's package files outside Git and the monorepo, then
+builds and tests them with the same Maven dependency.
+
+To develop against Java SDK source, explicitly opt into Gradle's composite build:
 
 ```sh
 git clone https://github.com/ListenNotes/podcast-api-java.git ../podcast-api-java
-git -C ../podcast-api-java checkout b697b4026f0123820459427b3579b737b592d303
+git -C ../podcast-api-java checkout v3.1.0
 ./gradlew --include-build ../podcast-api-java check
 ./gradlew --include-build ../podcast-api-java integrationTest
 PODCAST_API_JAVA_SOURCE=../podcast-api-java bash scripts/verify-package.sh
 ```
 
-CI uses that pinned source while publication is pending. Its manual `maven` option
-also verifies a fresh Maven Central consumer. Remove the source override from
-routine CI only after the artifact is publicly resolvable. Java SDK 3 adds playlist
-writes and requires Java 17; map arguments and response/quota helpers are unchanged.
+The source override is optional; ordinary builds resolve Maven Central directly.
+Java SDK 3 adds playlist writes and requires Java 17; map arguments and
+response/quota helpers are unchanged.
 
 The monorepo generates the marked README sections, `GeneratedExamples`, and the
 contract snapshot with `sync.py scala`. Do not hand-edit generated outputs.
@@ -896,6 +905,33 @@ object Example {
 ```
 
 [Full API documentation](https://www.listennotes.com/api/docs/#put-api-v2-playlists-id)
+
+### deletePlaylist
+
+Delete a playlist.
+
+`DELETE /playlists/{id}`
+
+Permanently delete a playlist, including all episode and podcast references saved in this specific playlist and their notes. The actual episodes and podcasts remain in the Listen Notes podcast database.
+
+**Warning: Deletion cannot be undone. Once deleted, the playlist is gone, regardless of how many episodes or podcasts it contains. You, the developer, are responsible for adding a confirmation step in your app's UI before calling this endpoint to prevent accidental deletion.**
+
+Only playlists owned by your admin API account can be modified; contributor membership does not grant write access.
+
+```scala
+import com.listennotes.podcast_api.Client
+
+object Example {
+    def main(args: Array[String]): Unit = {
+        val client = new Client(scala.util.Properties.envOrElse("LISTEN_API_KEY", ""))
+        val parameters = new java.util.HashMap[String, String]()
+        parameters.put("id", "m1pe7z60bsw")
+        println(client.deletePlaylist(parameters).toJSON().toString(2))
+    }
+}
+```
+
+[Full API documentation](https://www.listennotes.com/api/docs/#delete-api-v2-playlists-id)
 
 ### addPlaylistItem
 

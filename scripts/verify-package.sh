@@ -7,6 +7,6 @@ standalone=$(mktemp -d)
 trap 'rm -rf "$standalone"' EXIT
 (cd "$sdk_root" && tar -cf - settings.gradle gradle.properties gradlew gradlew.bat gradle app/build.gradle app/gradle.lockfile app/src README.md LICENSE) | (cd "$standalone" && tar -xf -)
 cd "$standalone"
-args=()
-if [[ -n "$java_source" ]]; then args+=(--include-build "$java_source"); fi
-./gradlew --no-daemon "${args[@]}" check installDist
+set -- check installDist
+if [[ -n "$java_source" ]]; then set -- --include-build "$java_source" "$@"; fi
+./gradlew --no-daemon "$@"
