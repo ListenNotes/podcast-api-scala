@@ -70,10 +70,7 @@ These examples use Java SDK 3.2.0. Use the [mock API](https://www.listennotes.he
 
 ## Installation
 
-Requires Java 17+. These Scala examples require Java SDK 3.2.0. The coordinates below become available after publication to Maven Central. This repository does not publish a separate Scala Maven package.
-
-
-You can install this library for JVM-based languages, including Java, Kotlin, Clojure, Scala, Groovy...
+These examples require Java 17+ and the shared [Java SDK 3.2.0](https://central.sonatype.com/artifact/com.listennotes/podcast-api/3.2.0) from Maven Central.
 
 ### Gradle users
 
@@ -190,7 +187,7 @@ call all methods on the stateless public mock and never load an API key.
 bash scripts/verify-package.sh
 ```
 
-CI tests Java 17 and 25. During release preparation it checks out the reviewed Java SDK commit and uses a composite build. Once 3.2.0 reaches Maven Central, CI resolves the published package. The standalone check builds and tests a source copy outside this repository.
+CI tests Java 17 and 25 against Java SDK 3.2.0 from Maven Central. The standalone check builds and tests a source copy outside this repository.
 
 To develop against Java SDK source, explicitly opt into Gradle's composite build:
 
