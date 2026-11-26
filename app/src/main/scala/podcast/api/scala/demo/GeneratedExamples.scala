@@ -239,6 +239,30 @@ object GeneratedExamples {
         client.updatePlaylistItemNotes(parameters)
     }
 
+    def estimateEpisodeTranscription(client: Client): ApiResponse = {
+        val parameters = new java.util.HashMap[String, String]()
+        parameters.put("id", "dc09fd798802477b8dba0ca1e10134fa")
+        client.estimateEpisodeTranscription(parameters)
+    }
+
+    def transcribeEpisode(client: Client): ApiResponse = {
+        val parameters = new java.util.HashMap[String, String]()
+        parameters.put("id", "1871d978bdc648588441bc5649857ddb")
+        client.transcribeEpisode(parameters)
+    }
+
+    def getEpisodeTranscript(client: Client): ApiResponse = {
+        val parameters = new java.util.HashMap[String, String]()
+        parameters.put("id", "1871d978bdc648588441bc5649857ddb")
+        client.getEpisodeTranscript(parameters)
+    }
+
+    def listTranscripts(client: Client): ApiResponse = {
+        val parameters = new java.util.HashMap[String, String]()
+        parameters.put("limit", "20")
+        client.listTranscripts(parameters)
+    }
+
     def call(client: Client, operation: String, parameters: java.util.Map[String, String]): ApiResponse =
         operation match {
             case "search" => client.search(parameters)
@@ -272,6 +296,10 @@ object GeneratedExamples {
             case "addPlaylistItem" => client.addPlaylistItem(parameters)
             case "deletePlaylistItem" => client.deletePlaylistItem(parameters)
             case "updatePlaylistItemNotes" => client.updatePlaylistItemNotes(parameters)
+            case "estimateEpisodeTranscription" => client.estimateEpisodeTranscription(parameters)
+            case "transcribeEpisode" => client.transcribeEpisode(parameters)
+            case "getEpisodeTranscript" => client.getEpisodeTranscript(parameters)
+            case "listTranscripts" => client.listTranscripts(parameters)
             case _ => throw new IllegalArgumentException("Unknown operation: " + operation)
         }
 }
