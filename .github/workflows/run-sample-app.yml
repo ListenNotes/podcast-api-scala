@@ -7,6 +7,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+env:
+  # CI uses this exact source revision until Maven Central has 3.2.0.
+  JAVA_SDK_SOURCE_REF: 3556fbeed2f6f201f2d0639d0d948ad2abd6eac2
 jobs:
   test:
     strategy:
@@ -21,7 +24,33 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.java }}
       - uses: gradle/actions/setup-gradle@v6.2.0
-      - run: ./gradlew --no-daemon check installDist
+      - name: Check Maven Central for the Java SDK
+        id: maven
+        run: |
+          version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          url="https://repo.maven.apache.org/maven2/com/listennotes/podcast-api/$version/podcast-api-$version.pom"
+          status=$(curl --head --silent --show-error --retry 2 --max-time 20 --output /dev/null --write-out '%{http_code}' "$url")
+          case "$status" in
+            200) ;;
+            404) echo "use-source=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unexpected Maven Central response: $status"; exit 1 ;;
+          esac
+      - uses: actions/checkout@v6.1.0
+        if: steps.maven.outputs.use-source == 'true'
+        with:
+          repository: ListenNotes/podcast-api-java
+          ref: ${{ env.JAVA_SDK_SOURCE_REF }}
+          path: .java-sdk-source
+          persist-credentials: false
+      - name: Enable Gradle composite build
+        if: steps.maven.outputs.use-source == 'true'
+        run: echo "PODCAST_API_JAVA_SOURCE=$GITHUB_WORKSPACE/.java-sdk-source" >> "$GITHUB_ENV"
+      - run: |
+          set -- check installDist
+          if [[ -n "${PODCAST_API_JAVA_SOURCE:-}" ]]; then
+            set -- --include-build "$PODCAST_API_JAVA_SOURCE" "$@"
+          fi
+          ./gradlew --no-daemon "$@"
       - run: bash scripts/verify-package.sh
   public-mock:
     runs-on: ubuntu-24.04
@@ -32,4 +61,30 @@ jobs:
           distribution: temurin
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v6.2.0
-      - run: ./gradlew --no-daemon integrationTest
+      - name: Check Maven Central for the Java SDK
+        id: maven
+        run: |
+          version=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          url="https://repo.maven.apache.org/maven2/com/listennotes/podcast-api/$version/podcast-api-$version.pom"
+          status=$(curl --head --silent --show-error --retry 2 --max-time 20 --output /dev/null --write-out '%{http_code}' "$url")
+          case "$status" in
+            200) ;;
+            404) echo "use-source=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unexpected Maven Central response: $status"; exit 1 ;;
+          esac
+      - uses: actions/checkout@v6.1.0
+        if: steps.maven.outputs.use-source == 'true'
+        with:
+          repository: ListenNotes/podcast-api-java
+          ref: ${{ env.JAVA_SDK_SOURCE_REF }}
+          path: .java-sdk-source
+          persist-credentials: false
+      - name: Enable Gradle composite build
+        if: steps.maven.outputs.use-source == 'true'
+        run: echo "PODCAST_API_JAVA_SOURCE=$GITHUB_WORKSPACE/.java-sdk-source" >> "$GITHUB_ENV"
+      - run: |
+          set -- integrationTest
+          if [[ -n "${PODCAST_API_JAVA_SOURCE:-}" ]]; then
+            set -- --include-build "$PODCAST_API_JAVA_SOURCE" "$@"
+          fi
+          ./gradlew --no-daemon "$@"

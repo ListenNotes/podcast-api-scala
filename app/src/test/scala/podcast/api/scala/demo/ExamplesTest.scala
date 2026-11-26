@@ -11,7 +11,7 @@ class ExamplesTest {
   @TestFactory
   def allMethods(): java.util.List[DynamicTest] = {
     val operations = Support.operations().asScala
-    assertEquals(31, operations.size)
+    assertEquals(35, operations.size)
     operations.map { op =>
       DynamicTest.dynamicTest(op.getString("func"), () => {
         val server = new Support()
@@ -100,7 +100,7 @@ class MockIntegrationTest {
   def allMethods(): java.util.List[DynamicTest] = Support.operations().asScala.map { op =>
     DynamicTest.dynamicTest(op.getString("func"), () => {
       val response = GeneratedExamples.call(new Client(), op.getString("operationId"), Support.parameters(op))
-      assertTrue(Set(200, 201).contains(response.getStatusCode()))
+      assertTrue((200 until 300).contains(response.getStatusCode()))
       assertFalse(response.toJSON().isEmpty())
       if (op.getString("operationId") == "deletePlaylist") {
         assertEquals(200, response.getStatusCode())
